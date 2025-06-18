@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Ollama Chooser</title>
+</head>
+<body>
+<h1>Ollama Models</h1>
+<div id="models"></div>
+<h2>Run Command</h2>
+<input id="command" type="text" placeholder="command">
+<button onclick="runCommand()">Run</button>
+<pre id="output"></pre>
+<script>
+async function loadModels() {
+    const response = await fetch('/api/models');
+    const models = await response.json();
+    const container = document.getElementById('models');
+    container.innerHTML = '';
+    models.forEach(m => {
+        const div = document.createElement('div');
+        const button = document.createElement('button');
+        button.textContent = m.running ? 'Выключить' : 'Включить';
+        button.onclick = () => toggleModel(m.name, m.running);
+        div.textContent = m.name + ' ';
+        div.appendChild(button);
+        container.appendChild(div);
+    });
+}
+async function toggleModel(name, running) {
+    await fetch('/api/model/' + name + '/' + (running ? 'stop' : 'start'), {method: 'POST'});
+    loadModels();
+}
+async function runCommand() {
+    const cmd = document.getElementById('command').value;
+    const response = await fetch('/api/run', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({command: cmd})
+    });
+    const data = await response.json();
+    document.getElementById('output').textContent = data.stdout || data.stderr || '';
+}
+loadModels();
+</script>
+</body>
+</html>
