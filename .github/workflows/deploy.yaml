@@ -20,9 +20,9 @@ jobs:
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} "mkdir -p ~/ollama-compose"
 
-      - name: Copy compose file to server
+      - name: Copy project files to server
         run: |
-          rsync -avz -e "ssh -o StrictHostKeyChecking=no" docker-compose.yml ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:~/ollama-compose/docker-compose.yml
+          rsync -avz -e "ssh -o StrictHostKeyChecking=no" --exclude '.git' ./ ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:~/ollama-compose/
 
       - name: Run docker compose on server
         run: |
