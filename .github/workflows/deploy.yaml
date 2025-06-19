@@ -1,8 +1,10 @@
+---
 name: Deploy to Server
 
-on:
+'on':
   push:
-    branches: [ "main" ]
+    branches:
+      - main
 
 jobs:
   deploy:
@@ -18,15 +20,21 @@ jobs:
 
       - name: Prepare server directory
         run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} "mkdir -p ~/ollama-compose"
+          ssh -o StrictHostKeyChecking=no \
+            ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} \
+            "mkdir -p ~/ollama-compose"
 
       - name: Copy project files to server
         run: |
-          rsync -avz -e "ssh -o StrictHostKeyChecking=no" --exclude '.git' ./ ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:~/ollama-compose/
+          REMOTE="${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}"
+          rsync -avz -e "ssh -o StrictHostKeyChecking=no" \
+            --exclude '.git' ./ \
+            "$REMOTE:~/ollama-compose/"
 
       - name: Run docker compose on server
         run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} <<'EOSSH'
+          ssh -o StrictHostKeyChecking=no \
+            ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} <<'EOSSH'
           mkdir -p ~/ollama-compose
           cd ~/ollama-compose
           docker compose up -d
